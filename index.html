@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>藥劑稀釋計算機 (排版優化版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>藥劑稀釋計算機 (終極排版版)</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         :root {
@@ -17,7 +17,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--background-color);
             margin: 0;
-            padding: 15px; /* 稍微縮減外邊距，留更多空間給內容 */
+            padding: 10px;
             display: flex;
             justify-content: center;
         }
@@ -27,13 +27,14 @@
             background: var(--card-color);
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 20px;
+            padding: 15px;
             box-sizing: border-box;
         }
         h2 {
             text-align: center;
             color: #333;
-            margin-top: 0;
+            margin-top: 5px;
+            margin-bottom: 15px;
         }
         /* 模式切換按鈕組 */
         .tab-group {
@@ -41,14 +42,14 @@
             background: #e5e5ea;
             padding: 2px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .tab-btn {
             flex: 1;
             border: none;
             background: transparent;
-            padding: 10px;
-            font-size: 16px;
+            padding: 10px 5px;
+            font-size: 15px;
             cursor: pointer;
             border-radius: 6px;
             transition: all 0.2s;
@@ -61,14 +62,16 @@
         }
         /* 表單樣式 */
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .input-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             color: #666;
-            font-size: 14px;
+            font-size: 13px;
         }
+        
+        /* 🔥 終極一線佈局：強迫縮小與分配空間 */
         .input-wrapper {
             display: flex;
             align-items: center;
@@ -76,46 +79,53 @@
             border-radius: 8px;
             padding: 10px;
             background: #fff;
-            gap: 8px; /* 讓欄位元件之間保持固定間距 */
-        }
-        .input-wrapper input {
-            border: none;
-            outline: none;
-            flex: 1; /* 讓輸入框自動吃掉剩餘空間 */
-            min-width: 50px; /* 給予最小寬度防崩塌 */
-            font-size: 18px;
-            text-align: right;
-            padding: 0;
+            box-sizing: border-box;
+            width: 100%;
         }
         .unit {
             color: var(--gray-color);
             font-weight: 500;
-            white-space: nowrap; /* 🔥 核心修改：強制標題不換行 */
-            flex-shrink: 0; /* 防止被擠壓 */
+            font-size: 16px;
+            width: 50px;       /* 👈 固定左側標題寬度 */
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .input-wrapper input {
+            border: none;
+            outline: none;
+            font-size: 18px;
+            text-align: right;
+            padding: 0 5px 0 0;
+            width: 100%;       /* 👈 撐滿中間 */
+            min-width: 10px;   /* 👈 允許縮到極小而不擠壓兩側 */
+            box-sizing: border-box;
         }
         .unit-right {
             color: #333;
-            font-size: 16px;
-            white-space: nowrap; /* 🔥 核心修改：強制後方單位絕對不換行 */
-            flex-shrink: 0; /* 防止被擠壓 */
+            font-size: 15px;
+            width: 85px;       /* 👈 固定右側單位寬度，加長給 "mL (或 g)" 絕對夠放 */
+            text-align: right;
+            white-space: nowrap;
+            flex-shrink: 0;     /* 👈 絕對不允許被擠壓變形 */
         }
+        
         /* 三組水桶記憶功能區 */
         .memory-title {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
             margin-bottom: 6px;
         }
         .memory-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
         }
         .bucket-card {
             background: #f2f2f7;
             border: 2px solid transparent;
             border-radius: 10px;
-            padding: 10px;
+            padding: 8px 4px;
             text-align: center;
             cursor: pointer;
             position: relative;
@@ -126,29 +136,29 @@
             border-color: #d0e7ff;
         }
         .bucket-name {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             color: #555;
             margin-bottom: 4px;
         }
         .bucket-val {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: var(--primary-color);
         }
         .bucket-empty {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--gray-color);
         }
         .card-actions {
-            margin-top: 8px;
+            margin-top: 6px;
             display: flex;
             justify-content: center;
-            gap: 5px;
+            gap: 4px;
         }
         .btn-mini {
             border: none;
-            padding: 3px 6px;
+            padding: 2px 4px;
             font-size: 11px;
             border-radius: 4px;
             cursor: pointer;
@@ -162,15 +172,15 @@
             border-left: 5px solid var(--primary-color);
             padding: 15px;
             border-radius: 4px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         .result-title {
-            font-size: 14px;
+            font-size: 13px;
             color: #007aff;
             margin-bottom: 5px;
         }
         .result-value {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             color: #333;
         }
@@ -188,7 +198,7 @@
     </div>
 
     <div v-if="mode === 'chemical' || mode === 'ratio'">
-        <div class="memory-title">🪣 常用自訂水桶容量 (點擊可直接帶入)：</div>
+        <div class="memory-title">🪣 常用自訂水桶容量 (點擊帶入)：</div>
         <div class="memory-container">
             <div v-for="key in ['A', 'B', 'C']" :key="key" 
                  class="bucket-card" 
@@ -201,7 +211,7 @@
                 
                 <div class="card-actions" @click.stop>
                     <button class="btn-mini btn-save" v-if="water && water !== buckets[key]" @click="saveBucket(key)">
-                        記下現值
+                        記下
                     </button>
                     <button class="btn-mini btn-clear" v-if="buckets[key]" @click="clearBucket(key)">
                         清除
