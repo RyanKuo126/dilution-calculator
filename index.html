@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>藥劑稀釋計算機</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        :root {
+            --primary-color: #007aff;
+            --background-color: #f2f2f7;
+            --card-color: #ffffff;
+            --success-color: #34c759;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+        }
+        /* 模式切換按鈕組 */
+        .tab-group {
+            display: flex;
+            background: #e5e5ea;
+            padding: 2px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--card-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        /* 表單樣式 */
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid #c7c7cc;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fff;
+        }
+        .input-wrapper input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 18px;
+            text-align: right;
+            padding-right: 10px;
+        }
+        .unit {
+            color: #8e8e93;
+            font-weight: 500;
+            width: 80px;
+        }
+        /* 記憶水桶功能區 */
+        .memory-section {
+            background: #f2f2f7;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .memory-text {
+            font-size: 14px;
+            color: #333;
+        }
+        .btn {
+            border: none;
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-save {
+            background-color: var(--success-color);
+            color: white;
+        }
+        .btn-use {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-clear {
+            background-color: #ff3b30;
+            color: white;
+        }
+        /* 結果顯示區 */
+        .result-box {
+            background: #f1f7ff;
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .result-title {
+            font-size: 14px;
+            color: #007aff;
+            margin-bottom: 5px;
+        }
+        .result-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="container">
+    <h2>藥劑稀釋計算機</h2>
+    
+    <div class="tab-group">
+        <button class="tab-btn" :class="{active: mode === 'chemical'}" @click="mode = 'chemical'">算藥量</button>
+        <button class="tab-btn" :class="{active: mode === 'water'}" @click="mode = 'water'">算水量</button>
+        <button class="tab-btn" :class="{active: mode === 'ratio'}" @click="mode = 'ratio'">算倍數</button>
+    </div>
+
+    <div class="memory-section" v-if="mode === 'chemical' || mode === 'ratio'">
+        <div class="memory-text">
+            <span v-if="savedWater">💾 常用桶容量：<strong>{{ savedWater }} L</strong></span>
+            <span v-else>💡 您尚未儲存常用桶容量</span>
+        </div>
+        <div>
+            <button class="btn btn-save" v-if="water && water !== savedWater" @click="saveWater">記憶此容量</button>
+            <button class="btn btn-use" v-if="savedWater && water !== savedWater" @click="useSavedWater">帶入</button>
+            <button class="btn btn-clear" v-if="savedWater" @click="clearSavedWater">清除記憶</button>
+        </div>
+    </div>
+
+    <div class="form">
+        <div class="input-group" v-if="mode === 'chemical' || mode === 'ratio'">
+            <label>目標總水量</label>
+            <div class="input-wrapper">
+                <span class="unit">水 量</span>
+                <input type="number" inputmode="decimal" v-model.number="water" placeholder="例如: 20">
+                <span>L (公升)</span>
+            </div>
+        </div>
+
+        <div class="input-group" v-if="mode === 'chemical' || mode === 'water'">
+            <label>稀釋倍數</label>
+            <div class="input-wrapper">
+                <span class="unit">倍 數</span>
+                <input type="number" inputmode="numeric" v-model.number="ratio" placeholder="例如: 1000">
+                <span>倍</span>
+            </div>
+        </div>
+
+        <div class="input-group" v-if="mode === 'water' || mode === 'ratio'">
+            <label>所需藥量</label>
+            <div class="input-wrapper">
+                <span class="unit">藥 量</span>
+                <input type="number" inputmode="decimal" v-model.number="chemical" placeholder="例如: 20">
+                <span>mL (或 g)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-box">
+        <div class="result-title">計算結果</div>
+        <div class="result-value">{{ resultText }}</div>
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, computed } = Vue;
+
+    createApp({
+        setup() {
+            const mode = ref('chemical'); 
+            const water = ref('');
+            const ratio = ref('');
+            const chemical = ref('');
+
+            // 從手機/電腦瀏覽器讀取之前儲存的水量
+            const savedWater = ref(localStorage.getItem('saved_tank_water') || null);
+
+            // 儲存目前輸入的水量到記憶體
+            const saveWater = () => {
+                if (water.value) {
+                    localStorage.setItem('saved_tank_water', water.value);
+                    savedWater.value = water.value;
+                }
+            };
+
+            // 一鍵帶入儲存的水量
+            const useSavedWater = () => {
+                if (savedWater.value) {
+                    water.value = Number(savedWater.value);
+                }
+            };
+
+            // 清除記憶的水量
+            const clearSavedWater = () => {
+                localStorage.removeItem('saved_tank_water');
+                savedWater.value = null;
+            };
+
+            // 核心計算邏輯
+            const resultText = computed(() => {
+                if (mode.value === 'chemical') {
+                    if (!water.value || !ratio.value || ratio.value <= 0) return '請輸入水量與倍數';
+                    let res = (water.value * 1000) / ratio.value;
+                    return `${res.toFixed(2)} mL (毫升)`;
+                } else if (mode.value === 'water') {
+                    if (!chemical.value || !ratio.value) return '請輸入藥量與倍數';
+                    let res = (chemical.value * ratio.value) / 1000;
+                    return `${res.toFixed(2)} L (公升)`;
+                } else {
+                    if (!water.value || !chemical.value || chemical.value <= 0) return '請輸入水量與藥量';
+                    let res = (water.value * 1000) / chemical.value;
+                    return `${Math.round(res)} 倍`;
+                }
+            });
+
+            return { 
+                mode, water, ratio, chemical, resultText, 
+                savedWater, saveWater, useSavedWater, clearSavedWater 
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
