@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>藥劑稀釋計算機 (終極排版版)</title>
+    <title>藥劑稀釋計算機</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         :root {
@@ -19,7 +19,9 @@
             margin: 0;
             padding: 10px;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* 讓內容與頁尾垂直排列 */
+            align-items: center;
+            min-height: 90vh;
         }
         .container {
             width: 100%;
@@ -29,6 +31,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             padding: 15px;
             box-sizing: border-box;
+            margin-bottom: 15px; /* 與下方簽名留點距離 */
         }
         h2 {
             text-align: center;
@@ -71,7 +74,7 @@
             font-size: 13px;
         }
         
-        /* 🔥 終極一線佈局：強迫縮小與分配空間 */
+        /* 終極一線佈局 */
         .input-wrapper {
             display: flex;
             align-items: center;
@@ -86,7 +89,7 @@
             color: var(--gray-color);
             font-weight: 500;
             font-size: 16px;
-            width: 50px;       /* 👈 固定左側標題寬度 */
+            width: 50px;
             white-space: nowrap;
             flex-shrink: 0;
         }
@@ -96,17 +99,17 @@
             font-size: 18px;
             text-align: right;
             padding: 0 5px 0 0;
-            width: 100%;       /* 👈 撐滿中間 */
-            min-width: 10px;   /* 👈 允許縮到極小而不擠壓兩側 */
+            width: 100%;
+            min-width: 10px;
             box-sizing: border-box;
         }
         .unit-right {
             color: #333;
             font-size: 15px;
-            width: 85px;       /* 👈 固定右側單位寬度，加長給 "mL (或 g)" 絕對夠放 */
+            width: 85px;
             text-align: right;
             white-space: nowrap;
-            flex-shrink: 0;     /* 👈 絕對不允許被擠壓變形 */
+            flex-shrink: 0;
         }
         
         /* 三組水桶記憶功能區 */
@@ -184,6 +187,17 @@
             font-weight: bold;
             color: #333;
         }
+
+        /* 🔥 右下角營業所簽名樣式 */
+        .footer {
+            width: 100%;
+            max-width: 500px;
+            text-align: right; /* 靠右對齊 */
+            padding-right: 5px;
+            font-size: 13px;
+            color: var(--gray-color); /* 淡淡的灰色，低調有質感 */
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -226,7 +240,7 @@
             <label>目標總水量</label>
             <div class="input-wrapper">
                 <span class="unit">水 量</span>
-                <input type="number" inputmode="decimal" v-model.number="water" placeholder="例如: 20">
+                <input type="number" inputmode="decimal" v-model.number="water" placeholder="example: 20">
                 <span class="unit-right">L (公升)</span>
             </div>
         </div>
@@ -235,7 +249,7 @@
             <label>稀釋倍數</label>
             <div class="input-wrapper">
                 <span class="unit">倍 數</span>
-                <input type="number" inputmode="numeric" v-model.number="ratio" placeholder="例如: 1000">
+                <input type="number" inputmode="numeric" v-model.number="ratio" placeholder="example: 1000">
                 <span class="unit-right">倍</span>
             </div>
         </div>
@@ -244,7 +258,7 @@
             <label>所需藥量</label>
             <div class="input-wrapper">
                 <span class="unit">藥 量</span>
-                <input type="number" inputmode="decimal" v-model.number="chemical" placeholder="例如: 20">
+                <input type="number" inputmode="decimal" v-model.number="chemical" placeholder="example: 20">
                 <span class="unit-right">mL (或 g)</span>
             </div>
         </div>
@@ -254,6 +268,10 @@
         <div class="result-title">計算結果</div>
         <div class="result-value">{{ resultText }}</div>
     </div>
+</div>
+
+<div class="footer">
+    By. 興農太麻里營業所
 </div>
 
 <script>
