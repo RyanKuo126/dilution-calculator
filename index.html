@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>藥劑稀釋計算機 (三組記憶)</title>
+    <title>藥劑稀釋計算機 (排版優化版)</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         :root {
@@ -17,7 +17,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--background-color);
             margin: 0;
-            padding: 20px;
+            padding: 15px; /* 稍微縮減外邊距，留更多空間給內容 */
             display: flex;
             justify-content: center;
         }
@@ -76,19 +76,28 @@
             border-radius: 8px;
             padding: 10px;
             background: #fff;
+            gap: 8px; /* 讓欄位元件之間保持固定間距 */
         }
         .input-wrapper input {
             border: none;
             outline: none;
-            flex: 1;
+            flex: 1; /* 讓輸入框自動吃掉剩餘空間 */
+            min-width: 50px; /* 給予最小寬度防崩塌 */
             font-size: 18px;
             text-align: right;
-            padding-right: 10px;
+            padding: 0;
         }
         .unit {
             color: var(--gray-color);
             font-weight: 500;
-            width: 80px;
+            white-space: nowrap; /* 🔥 核心修改：強制標題不換行 */
+            flex-shrink: 0; /* 防止被擠壓 */
+        }
+        .unit-right {
+            color: #333;
+            font-size: 16px;
+            white-space: nowrap; /* 🔥 核心修改：強制後方單位絕對不換行 */
+            flex-shrink: 0; /* 防止被擠壓 */
         }
         /* 三組水桶記憶功能區 */
         .memory-title {
@@ -187,7 +196,6 @@
                  @click="useBucket(key)">
                 
                 <div class="bucket-name">水桶 {{ key }}</div>
-                
                 <div v-if="buckets[key]" class="bucket-val">{{ buckets[key] }} L</div>
                 <div v-else class="bucket-empty">未設定</div>
                 
@@ -209,7 +217,7 @@
             <div class="input-wrapper">
                 <span class="unit">水 量</span>
                 <input type="number" inputmode="decimal" v-model.number="water" placeholder="例如: 20">
-                <span>L (公升)</span>
+                <span class="unit-right">L (公升)</span>
             </div>
         </div>
 
@@ -218,7 +226,7 @@
             <div class="input-wrapper">
                 <span class="unit">倍 數</span>
                 <input type="number" inputmode="numeric" v-model.number="ratio" placeholder="例如: 1000">
-                <span>倍</span>
+                <span class="unit-right">倍</span>
             </div>
         </div>
 
@@ -227,7 +235,7 @@
             <div class="input-wrapper">
                 <span class="unit">藥 量</span>
                 <input type="number" inputmode="decimal" v-model.number="chemical" placeholder="例如: 20">
-                <span>mL (或 g)</span>
+                <span class="unit-right">mL (或 g)</span>
             </div>
         </div>
     </div>
@@ -248,14 +256,12 @@
             const ratio = ref('');
             const chemical = ref('');
 
-            // 使用響應式物件管理 A, B, C 三組水桶，預設嘗試從瀏覽器快取讀取
             const buckets = reactive({
                 A: localStorage.getItem('bucket_A') || null,
                 B: localStorage.getItem('bucket_B') || null,
-                ...{ C: localStorage.getItem('bucket_C') || null }
+                C: localStorage.getItem('bucket_C') || null
             });
 
-            // 記憶目前輸入的水量到指定的水桶
             const saveBucket = (key) => {
                 if (water.value) {
                     localStorage.setItem(`bucket_${key}`, water.value);
@@ -263,20 +269,17 @@
                 }
             };
 
-            // 點擊水桶卡片，直接帶入數值
             const useBucket = (key) => {
                 if (buckets[key]) {
                     water.value = Number(buckets[key]);
                 }
             };
 
-            // 清除特定水桶的紀錄
             const clearBucket = (key) => {
                 localStorage.removeItem(`bucket_${key}`);
                 buckets[key] = null;
             };
 
-            // 核心計算邏輯
             const resultText = computed(() => {
                 if (mode.value === 'chemical') {
                     if (!water.value || !ratio.value || ratio.value <= 0) return '請輸入水量與倍數';
